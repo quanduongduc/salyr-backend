@@ -8,7 +8,7 @@ from src.auth.dependencies import (
     valid_user_create,
 )
 from src.auth.jwt import parse_jwt_user_data
-from src.auth.schemas import AccessTokenResponse, AuthUser, JWTData, UserResponse
+from src.api.auth.schemas import AccessTokenResponse, AuthUser, JWTData, UserResponse
 
 router = APIRouter()
 

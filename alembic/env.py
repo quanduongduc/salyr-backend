@@ -4,7 +4,7 @@ from alembic import context
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
-from src.database import metadata, DATABASE_URL
+from src.db.database import metadata, DATABASE_URL
 
 
 # this is the Alembic Config object, which provides

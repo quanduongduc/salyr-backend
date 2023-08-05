@@ -1,15 +1,22 @@
 from typing import Any
 
-from pydantic import BaseSettings, PostgresDsn, RedisDsn, root_validator
+from pydantic import BaseSettings, RedisDsn, root_validator
 
-from src.constants import Environment
+from helpers.constants import Environment
 
 
 class Config(BaseSettings):
-    DATABASE_URL: PostgresDsn
-    REDIS_URL: RedisDsn
-
     SITE_DOMAIN: str = "myapp.com"
+
+    DB_USERNAME: str
+    DB_PASSWORD: str
+    DB_HOST: str
+    DB_PORT: str = 3306
+    DB_NAME: str
+
+    REDIS_PASSWORD: str
+    REDIS_HOST: str = 'redis'
+    REDIS_PORT: int = 6379  # Default Redis port
 
     ENVIRONMENT: Environment = Environment.PRODUCTION
 
@@ -20,6 +27,15 @@ class Config(BaseSettings):
     CORS_HEADERS: list[str]
 
     APP_VERSION: str = "1"
+
+    @property
+    def redis_url(self) -> RedisDsn:
+        return RedisDsn.build(password=self.REDIS_PASSWORD, port=self.REDIS_PORT, host=self.REDIS_HOST, scheme='redis')
+
+    @property
+    def mysql_dsn(self):
+        connection_string = f"mysql+mysqlconnector://{self.DB_USERNAME}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+        return connection_string
 
     @root_validator(skip_on_failure=True)
     def validate_sentry_non_local(cls, data: dict[str, Any]) -> dict[str, Any]:

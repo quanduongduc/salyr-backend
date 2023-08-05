@@ -5,12 +5,12 @@ from databases.interfaces import Record
 from pydantic import UUID4
 from sqlalchemy import insert, select
 
-from src import utils
+from src.utils import utils
 from src.auth.config import auth_config
 from src.auth.exceptions import InvalidCredentials
-from src.auth.schemas import AuthUser
+from src.api.auth.schemas import AuthUser
 from src.auth.security import check_password, hash_password
-from src.database import auth_user, database, refresh_tokens
+from src.db.database import auth_user, database, refresh_tokens
 
 
 async def create_user(user: AuthUser) -> Record | None:

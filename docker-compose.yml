@@ -1,4 +1,4 @@
-version: '3.7'
+version: "3.7"
 
 services:
   app:
@@ -15,35 +15,45 @@ services:
       - "8000:8000"
     depends_on:
       - app_db
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - DB_HOST=host.docker.internal
+    networks:
+      - app_network
 
   app_db:
-    container_name: app_db
-    hostname: app_db
-    image: library/postgres:14.1
+    image: mysql:8.0
+    cap_add:
+      - SYS_NICE
+    restart: always
     environment:
-      - POSTGRES_USER=app
-      - POSTGRES_PASSWORD=app
-      - POSTGRES_DB=app
-    volumes:
-      - app_pg_data:/var/lib/postgresql/data
+      - MYSQL_DATABASE = $DB_NAME
+      - MYSQL_ROOT_PASSWORD = $DB_PASSWORD
+      - MYSQL_USER = $DB_USERNAME
+      - MYSQL_PASSWORD = $DB_PASSWORD
     ports:
-      - "5432:5432"
+      - "3306:3306"
+    volumes:
+      - db:/var/lib/mysql
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   app_redis:
     image: redis:6.2-alpine
     hostname: redis
     container_name: app_redis
     command:
-      - 'redis-server'
-      - '--requirepass myStrongPassword'
+      - "redis-server"
+      - "--requirepass $REDIS_PASSWORD"
     ports:
       - 6379:6379
+    networks:
+      - app_network
 
 volumes:
-  app_pg_data:
+  db:
     driver: "local"
 
 networks:
-  default:
-    external: true
-    name: app_main
+  app_network:
+    driver: bridge

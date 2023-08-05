@@ -5,7 +5,7 @@ from fastapi import Cookie, Depends
 
 from src.auth import service
 from src.auth.exceptions import EmailTaken, RefreshTokenNotValid
-from src.auth.schemas import AuthUser
+from src.api.auth.schemas import AuthUser
 
 
 async def valid_user_create(user: AuthUser) -> AuthUser:

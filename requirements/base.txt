@@ -1,11 +1,11 @@
 redis==4.5.5
-alembic==1.9.1
-bcrypt
-databases[asyncpg]==0.7.0
+alembic==1.11.2
+bcrypt==4.0.1
+mysql-connector-python==8.1.0
 orjson==3.8.4
 psycopg2==2.9.5
 python-jose==3.3.0
-SQLAlchemy==1.4.46
+SQLAlchemy==2.0.19
 httpx==0.23.3
 
 pydantic[email]==1.10.4

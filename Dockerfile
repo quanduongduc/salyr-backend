@@ -11,7 +11,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 COPY requirements/ /tmp/requirements
 
-RUN pip install -U pip && \
+RUN pip install --upgrade pip && \
     pip install --no-cache-dir -r /tmp/requirements/dev.txt
 
 COPY . /src
