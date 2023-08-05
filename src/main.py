@@ -10,21 +10,20 @@ from starlette.middleware.cors import CORSMiddleware
 from db import redis
 from routers import auth, users, artists, albums, songs, playlists, search
 from config.config import app_configs, settings
-# from db.database import database
 
 
-# @asynccontextmanager
-# async def lifespan(_application: FastAPI) -> AsyncGenerator:
-#     # Startup
-#     pool = aioredis.ConnectionPool.from_url(
-#         settings.redis_url, max_connections=10, decode_responses=True
-#     )
-#     redis.redis_client = aioredis.Redis(connection_pool=pool)
-#     print(redis.redis_client)
-#     yield
+@asynccontextmanager
+async def lifespan(_application: FastAPI) -> AsyncGenerator:
+    # Startup
+    pool = aioredis.ConnectionPool.from_url(
+        settings.redis_url, max_connections=10, decode_responses=True
+    )
+    redis.redis_client = aioredis.Redis(connection_pool=pool)
+    print(redis.redis_client)
+    yield
 
-#     # Shutdown
-#     await redis.redis_client.close()
+    # Shutdown
+    await redis.redis_client.close()
 
 
 app = FastAPI(**app_configs)
