@@ -6,6 +6,9 @@ from helpers.constants import Environment
 
 
 class Config(BaseSettings):
+    JWT_SECRET_KEY: str
+    JWT_ALG: str
+    
     SITE_DOMAIN: str = "myapp.com"
 
     DB_USERNAME: str

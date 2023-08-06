@@ -7,7 +7,7 @@ from jose import JWTError, jwt
 
 from src.auth.config import auth_config
 from src.auth.exceptions import AuthorizationFailed, AuthRequired, InvalidToken
-from src.api.auth.schemas import JWTData
+from src.services.auth.schemas import JWTData
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/users/tokens", auto_error=False)
 
