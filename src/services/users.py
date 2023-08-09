@@ -23,9 +23,9 @@ def create_user(user_data: UserRequest, db: Session) -> User:
     new_user = User(
         username=user_data.username,
         email=user_data.email,
+        avatar_url="https://picsum.photos/200/300" # dump for testing
     )
     
-    # Hash the user's password before storing it
     hashed_password = get_password_hash(user_data.password)
     new_user.password = hashed_password
     

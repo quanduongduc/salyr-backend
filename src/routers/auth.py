@@ -49,7 +49,7 @@ def login_user(
 
 
 @router.post("/refresh-token/")
-async def refresh_access_token(Authorize: AuthJWT = Depends(use_cache=False)):
+def refresh_access_token(Authorize: AuthJWT = Depends(use_cache=False)):
     try:
         Authorize.jwt_refresh_token_required()
         user_info = Authorize.get_raw_jwt()

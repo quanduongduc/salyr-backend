@@ -5,7 +5,22 @@ from models.artist_models import ArtistResponse
 from models.models import ORJSONModel
 
 
-class SongResponse(ORJSONModel):
+
+class SongBase(ORJSONModel):
+    title: str
+    release_date: str
+    duration: float
+    genre: str
+
+class SongCreate(SongBase):
+    pass
+
+class SongResponse(SongBase):
+    id: int
+
+    class Config:
+        orm_mode = True
+class SongResponse(SongBase):
     id: int
     title: str
     release_date: datetime

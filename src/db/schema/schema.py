@@ -8,6 +8,7 @@ from sqlalchemy import (
     String,
     Float,
     DateTime,
+    text,
 )
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -48,7 +49,7 @@ class User(Base):
     email = Column(String(255))
     hashed_password = Column(String(255))
     avatar_url = Column(String(255))
-    created_at = Column(DateTime)
+    created_at = Column(DateTime, server_default=text('now()'))
 
 
 class Song(Base):
