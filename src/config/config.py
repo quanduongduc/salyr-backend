@@ -37,7 +37,7 @@ class Config(BaseSettings):
 
     @property
     def mysql_dsn(self):
-        connection_string = f"mysql+mysqlconnector://{self.DB_USERNAME}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+        connection_string = f"mysql+pymysql://{self.DB_USERNAME}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
         return connection_string
 
     @root_validator(skip_on_failure=True)

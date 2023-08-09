@@ -1,13 +1,19 @@
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
-from fastapi.responses import HTMLResponse
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.middleware.gzip import GZipMiddleware
+from pydantic import ValidationError
 
+from pymysql import OperationalError
 import sentry_sdk
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, Request
 from redis import asyncio as aioredis
+from fastapi_jwt_auth.exceptions import AuthJWTException
 from starlette.middleware.cors import CORSMiddleware
 
 from db import redis
+from helpers.http_status import StatusCode
 from helpers.utils import JWTBearer
 from routers import auth, users, artists, albums, songs, playlists, search
 from config.config import app_configs, settings
@@ -27,7 +33,11 @@ async def lifespan(_application: FastAPI) -> AsyncGenerator:
     await redis.redis_client.close()
 
 
-app = FastAPI(**app_configs)
+app = FastAPI(
+    docs_url=None if settings.ENVIRONMENT != "LOCAL" else "/docs",
+    redoc_url=None if settings.ENVIRONMENT != "LOCAL" else "/redoc",
+    **app_configs,
+)
 
 app.add_middleware(
     CORSMiddleware,
@@ -37,6 +47,8 @@ app.add_middleware(
     allow_methods=("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"),
     allow_headers=settings.CORS_HEADERS,
 )
+
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 if settings.ENVIRONMENT.is_deployed:
     sentry_sdk.init(
@@ -102,19 +114,75 @@ async def get_home():
     return HTMLResponse(content=html_content)
 
 
+@app.exception_handler(ValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    error_dict = {}
+    for error in exc.errors():
+        if len(error["loc"]) != 4:
+            return JSONResponse(
+                status_code=StatusCode.HTTP_422_UNPROCESSABLE_ENTITY,
+                content={"detail": str(exc)},
+            )
+        field = error["loc"][3]
+        if field in error_dict:
+            continue
+        type = error["type"].split(".")[1]
+        error_dict[field] = f"field '{field}' wrong type, must be '{type}'"
+    error_detail = ". ".join(error_dict.values())
+    content = {"detail": error_detail, "message": "Invalid output type."}
+    return JSONResponse(
+        status_code=StatusCode.HTTP_422_UNPROCESSABLE_ENTITY, content=content
+    )
+
+
+@app.exception_handler(OperationalError)
+async def handle_database_exception(request: Request, exc: OperationalError):
+    return JSONResponse(
+        status_code=StatusCode.HTTP_500_INTERNAL_SERVER_ERROR, content=str(exc)
+    )
+
+
+@app.exception_handler(AuthJWTException)
+def authjwt_exception_handler(request: Request, exc: AuthJWTException):
+    return JSONResponse(
+        status_code=StatusCode.HTTP_401_UNAUTHORIZED, content={"detail": exc.message}
+    )
+
+
 app.include_router(
     auth.router, prefix="/auth", tags=["Authentication and Registration"]
 )
 
-app.include_router(users.router, dependencies=[Depends(
-    JWTBearer())], prefix="/users", tags=["User Profile"])
-app.include_router(artists.router, dependencies=[Depends(
-    JWTBearer())], prefix="/artists", tags=["Artists"])
-app.include_router(albums.router, dependencies=[Depends(
-    JWTBearer())], prefix="/albums", tags=["Albums"])
-app.include_router(songs.router, dependencies=[Depends(
-    JWTBearer())], prefix="/songs", tags=["Songs"])
-app.include_router(playlists.router, dependencies=[Depends(
-    JWTBearer())], prefix="/playlists", tags=["Playlists"])
-app.include_router(search.router, dependencies=[Depends(
-    JWTBearer())], prefix="/search", tags=["Search"])
+app.include_router(
+    users.router,
+    dependencies=[Depends(JWTBearer())],
+    prefix="/users",
+    tags=["User Profile"],
+)
+app.include_router(
+    artists.router,
+    dependencies=[Depends(JWTBearer())],
+    prefix="/artists",
+    tags=["Artists"],
+)
+app.include_router(
+    albums.router,
+    dependencies=[Depends(JWTBearer())],
+    prefix="/albums",
+    tags=["Albums"],
+)
+app.include_router(
+    songs.router, dependencies=[Depends(JWTBearer())], prefix="/songs", tags=["Songs"]
+)
+app.include_router(
+    playlists.router,
+    dependencies=[Depends(JWTBearer())],
+    prefix="/playlists",
+    tags=["Playlists"],
+)
+app.include_router(
+    search.router,
+    dependencies=[Depends(JWTBearer())],
+    prefix="/search",
+    tags=["Search"],
+)

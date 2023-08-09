@@ -1,6 +1,5 @@
 from fastapi import APIRouter
 from fastapi import APIRouter, Depends
-from src.db import database
 
 router = APIRouter(
     prefix="/songs",

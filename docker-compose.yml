@@ -13,7 +13,7 @@ services:
     volumes:
       - ./:/src
     ports:
-      - "8000:8000"
+      - "5000:8000"
     depends_on:
       - app_db
     extra_hosts:
@@ -34,7 +34,7 @@ services:
       - MYSQL_USER=$DB_USERNAME
       - MYSQL_PASSWORD=$DB_PASSWORD
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - db:/var/lib/mysql
       - ./db/:/docker-entrypoint-initdb.d/
@@ -48,7 +48,7 @@ services:
       - "redis-server"
       - "--requirepass $REDIS_PASSWORD"
     ports:
-      - 6379:6379
+      - 6377:6379
     networks:
       - app_network
 

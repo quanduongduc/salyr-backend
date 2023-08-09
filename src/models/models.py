@@ -35,50 +35,8 @@ class ORJSONModel(BaseModel):
         return {**data, **datetime_fields}
 
 
-class UserResponse(ORJSONModel):
-    id: int
-    username: str
-    email: str
-    avatar_url: str
-    created_at: datetime
-    playlists: List['PlaylistResponse']
 
 
-class SongResponse(ORJSONModel):
-    id: int
-    title: str
-    release_date: datetime
-    duration: int
-    genre: str
-    url: str
-    theme_url: str
-    artists: Optional[List['ArtistResponse']]
-    albums: Optional[List['AlbumResponse']]
 
 
-class AlbumResponse(ORJSONModel):
-    id: int
-    title: str
-    artist_id: int
-    release_date: datetime
-    cover_image_url: str
-    artist: 'ArtistResponse'
-    songs: List[SongResponse]
 
-
-class ArtistResponse(ORJSONModel):
-    id: int
-    name: str
-    bio: str
-    genre: str
-    albums: List[AlbumResponse]
-    songs: List[SongResponse]
-
-
-class PlaylistResponse(ORJSONModel):
-    id: int
-    user_id: int
-    title: str
-    creation_date: datetime
-    user: UserResponse
-    songs: List[SongResponse]
