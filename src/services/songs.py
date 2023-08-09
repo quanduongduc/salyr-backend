@@ -1,10 +1,12 @@
+from typing import Annotated
 from sqlalchemy.orm import Session
 
-from db.schema.schema import Song
+from db.schema import Song
 from models.songs_models import SongCreate
+from fastapi import File, UploadFile
 
 
-def create_song(db: Session,file: UploadFile = File(...) , song: SongCreate):
+def create_song(db: Session,file: Annotated[bytes, File()] , song: SongCreate):
     db_song = Song(**song.dict())
     db.add(db_song)
     db.commit()

@@ -1,14 +1,14 @@
 from typing import Any
 
 from pydantic import BaseSettings, RedisDsn, root_validator
-
+from fastapi_jwt_auth import AuthJWT
 from helpers.constants import Environment
 
 
-class Config(BaseSettings):
+class Settings(BaseSettings):
     JWT_SECRET_KEY: str
     JWT_ALG: str
-    
+
     SITE_DOMAIN: str = "myapp.com"
 
     DB_USERNAME: str
@@ -47,8 +47,11 @@ class Config(BaseSettings):
 
         return data
 
+    class Config:
+        env_file = ".env"
 
-settings = Config()
+
+settings = Settings()
 
 app_configs: dict[str, Any] = {"title": "App API"}
 if settings.ENVIRONMENT.is_deployed:

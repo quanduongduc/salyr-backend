@@ -1,11 +1,20 @@
-import time
+from time import time
 from typing import Dict
 import jwt
 import datetime
 from fastapi_jwt_auth import AuthJWT
 from jwt.exceptions import ExpiredSignatureError, DecodeError
+from pydantic import BaseModel
 from config.config import settings
-# Secret key for signing and verifying the JWT
+
+
+class AuthSettings(BaseModel):
+    authjwt_secret_key : str = settings.JWT_SECRET_KEY
+
+
+@AuthJWT.load_config
+def get_config():
+    return AuthSettings()
 
 
 def create_jwt(user_id: int, username: str, expiration_hours: int = 1) -> str:
@@ -64,14 +73,16 @@ def generate_tokens(user_info: Dict, authorize: AuthJWT):
 
     current_timestamp = int(time())
     claim_access['exp'] = current_timestamp + 3600      # seconds
-    claim_refresh['exp'] = current_timestamp + 3600*24   # seconds
+    claim_refresh['exp'] = current_timestamp + 3600 * 24   # seconds
+
     access_token = authorize.create_access_token(user_claims=claim_access,
-                                                 subject=user_info.get("catid"),
-                                                 algorithm="RS256",
+                                                 subject=user_info.get("id"),
+                                                 algorithm=settings.JWT_ALG,
                                                  headers=headers)
+
     refresh_token = authorize.create_refresh_token(user_claims=claim_refresh,
-                                                   subject=user_info.get("catid"),
-                                                   algorithm="RS256",
+                                                   subject=user_info.get("id"),
+                                                   algorithm=settings.JWT_ALG,
                                                    headers=headers)
 
     return access_token, refresh_token

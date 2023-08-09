@@ -33,11 +33,7 @@ async def lifespan(_application: FastAPI) -> AsyncGenerator:
     await redis.redis_client.close()
 
 
-app = FastAPI(
-    docs_url=None if settings.ENVIRONMENT != "LOCAL" else "/docs",
-    redoc_url=None if settings.ENVIRONMENT != "LOCAL" else "/redoc",
-    **app_configs,
-)
+app = FastAPI(**app_configs)
 
 app.add_middleware(
     CORSMiddleware,
@@ -113,42 +109,6 @@ async def get_home():
     """
     return HTMLResponse(content=html_content)
 
-
-@app.exception_handler(ValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    error_dict = {}
-    for error in exc.errors():
-        if len(error["loc"]) != 4:
-            return JSONResponse(
-                status_code=StatusCode.HTTP_422_UNPROCESSABLE_ENTITY,
-                content={"detail": str(exc)},
-            )
-        field = error["loc"][3]
-        if field in error_dict:
-            continue
-        type = error["type"].split(".")[1]
-        error_dict[field] = f"field '{field}' wrong type, must be '{type}'"
-    error_detail = ". ".join(error_dict.values())
-    content = {"detail": error_detail, "message": "Invalid output type."}
-    return JSONResponse(
-        status_code=StatusCode.HTTP_422_UNPROCESSABLE_ENTITY, content=content
-    )
-
-
-@app.exception_handler(OperationalError)
-async def handle_database_exception(request: Request, exc: OperationalError):
-    return JSONResponse(
-        status_code=StatusCode.HTTP_500_INTERNAL_SERVER_ERROR, content=str(exc)
-    )
-
-
-@app.exception_handler(AuthJWTException)
-def authjwt_exception_handler(request: Request, exc: AuthJWTException):
-    return JSONResponse(
-        status_code=StatusCode.HTTP_401_UNAUTHORIZED, content={"detail": exc.message}
-    )
-
-
 app.include_router(
     auth.router, prefix="/auth", tags=["Authentication and Registration"]
 )
@@ -186,3 +146,38 @@ app.include_router(
     prefix="/search",
     tags=["Search"],
 )
+
+
+@app.exception_handler(ValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    error_dict = {}
+    for error in exc.errors():
+        if len(error["loc"]) != 4:
+            return JSONResponse(
+                status_code=StatusCode.HTTP_422_UNPROCESSABLE_ENTITY,
+                content={"detail": str(exc)},
+            )
+        field = error["loc"][3]
+        if field in error_dict:
+            continue
+        type = error["type"].split(".")[1]
+        error_dict[field] = f"field '{field}' wrong type, must be '{type}'"
+    error_detail = ". ".join(error_dict.values())
+    content = {"detail": error_detail, "message": "Invalid output type."}
+    return JSONResponse(
+        status_code=StatusCode.HTTP_422_UNPROCESSABLE_ENTITY, content=content
+    )
+
+
+@app.exception_handler(OperationalError)
+async def handle_database_exception(request: Request, exc: OperationalError):
+    return JSONResponse(
+        status_code=StatusCode.HTTP_500_INTERNAL_SERVER_ERROR, content=str(exc)
+    )
+
+
+@app.exception_handler(AuthJWTException)
+def authjwt_exception_handler(request: Request, exc: AuthJWTException):
+    return JSONResponse(
+        status_code=StatusCode.HTTP_401_UNAUTHORIZED, content={"detail": exc.message}
+    )

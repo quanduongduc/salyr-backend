@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Query
 from fastapi import APIRouter, Depends
 from db.database import get_db
-from db.schema.schema import Song
+from db.schema import Song
 from sqlalchemy.orm import Session
 from helpers.http_status import StatusCode
 
