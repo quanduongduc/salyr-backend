@@ -1,29 +1,24 @@
 from datetime import datetime
 from typing import List, Optional
 
+from fastapi import Form
+from helpers.utils import as_form
+
 from models.artist_models import ArtistResponse
 from models.models import ORJSONModel
 
 
-
-class SongBase(ORJSONModel):
+@as_form
+class SongCreate(ORJSONModel):
     title: str
-    release_date: str
     duration: float
     genre: str
+    artists: list[int]
 
-class SongCreate(SongBase):
-    pass
 
-class SongResponse(SongBase):
-    id: int
-
-    class Config:
-        orm_mode = True
-class SongResponse(SongBase):
+class SongResponse(ORJSONModel):
     id: int
     title: str
-    release_date: datetime
     duration: int
     genre: str
     url: str

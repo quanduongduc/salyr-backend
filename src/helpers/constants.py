@@ -26,3 +26,15 @@ class Environment(str, Enum):
     @property
     def is_deployed(self) -> bool:
         return self in (self.STAGING, self.PRODUCTION)
+
+
+S3_SONG_PATH = "songs/audios/"
+S3_SONG_THEME_PATH = "songs/themes/"
+S3_AVATAR_FOLDER_PATH = "users/avatar/"
+S3_DEFAULT_AVATAR = "users/avatar/DEFAULT_FEMALE.svg"
+
+
+class Gender(int, Enum):
+    MALE = 1
+    FEMALE = 2
+    UNDEFINED = 0

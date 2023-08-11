@@ -29,6 +29,10 @@ class Settings(BaseSettings):
     CORS_ORIGINS_REGEX: str | None
     CORS_HEADERS: list[str]
 
+    S3_ACCESS_KEY : str
+    S3_SECRET_ACCESS_KEY : str
+    S3_BUCKET : str
+    S3_REGION: str
     APP_VERSION: str = "1"
 
     @property

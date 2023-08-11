@@ -21,5 +21,6 @@ def authenticate_user(username: str, password: str, db: Session = Depends(get_db
 def extract_user_info(user: User):
     return {
         "id": user.id,
-        "username": user.username
+        "username": user.username,
+        'email': user.email
     }

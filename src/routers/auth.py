@@ -8,7 +8,7 @@ from helpers.utils import JWTBearer
 from models.auth_models import AuthResponse, UserLogin
 from sqlalchemy.orm import Session
 from fastapi_jwt_auth import AuthJWT
-from models.user_models import UserRequest
+from models.user_models import UserCreate
 
 from services.auth import authenticate_user, extract_user_info
 from services.users import create_user
@@ -18,12 +18,19 @@ router = APIRouter()
 
 
 @router.post("/register")
-def register_user(UserBody: UserRequest, db: Session = Depends(get_db), Authorize: AuthJWT = Depends()):
-    existing_user = db.query(User).filter(User.username == UserBody.username).first()
+def register_user(UserBody: UserCreate, db: Session = Depends(get_db), Authorize: AuthJWT = Depends()):
+    existing_user = db.query(User.id).filter(User.username == UserBody.username).first()
     if existing_user:
         raise HTTPException(
             status_code=StatusCode.HTTP_404_NOT_FOUND,
             detail="Username already taken",
+        )
+
+    existing_email = db.query(User.email).filter(User.email == UserBody.email).first()
+    if existing_email:
+        raise HTTPException(
+            status_code=StatusCode.HTTP_404_NOT_FOUND,
+            detail="Email already registered",
         )
 
     user = create_user(UserBody, db)
@@ -51,7 +58,7 @@ def login_user(
     return {"access_token": access_token, "refresh_token": refresh_token}
 
 
-@router.post("/refresh-token/", dependencies=[Depends(JWTBearer())])
+@router.get("/refresh-token/", dependencies=[Depends(JWTBearer())])
 def refresh_access_token(Authorize: AuthJWT = Depends(use_cache=False)):
     try:
         Authorize.jwt_refresh_token_required()
