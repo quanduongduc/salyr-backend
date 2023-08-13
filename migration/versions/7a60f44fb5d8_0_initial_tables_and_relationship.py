@@ -23,7 +23,7 @@ def upgrade() -> None:
     op.create_table('artists',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=255), nullable=True),
-    sa.Column('bio', sa.String(length=255), nullable=True),
+    sa.Column('bio', sa.UnicodeText(), nullable=True),
     sa.Column('genre', sa.String(length=255), nullable=True),
     sa.PrimaryKeyConstraint('id', name=op.f('artists_pkey'))
     )

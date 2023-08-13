@@ -72,8 +72,8 @@ def generate_tokens(user_info: Dict, authorize: AuthJWT):
     claim_refresh['type'] = "refresh"
 
     current_timestamp = int(time())
-    claim_access['exp'] = current_timestamp + 3600      # seconds
-    claim_refresh['exp'] = current_timestamp + 3600 * 24   # seconds
+    claim_access['exp'] = current_timestamp + 3600 * 24      # seconds
+    claim_refresh['exp'] = current_timestamp + 3600 * 24 * 7   # seconds
 
     access_token = authorize.create_access_token(user_claims=claim_access,
                                                  subject=user_info.get("id"),

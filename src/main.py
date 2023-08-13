@@ -15,7 +15,7 @@ from starlette.middleware.cors import CORSMiddleware
 from db import redis
 from helpers.http_status import StatusCode
 from helpers.utils import JWTBearer
-from routers import auth, users, artists, albums, songs, playlists, search
+from routers import auth, users, artists, albums, songs, playlists
 from config.config import app_configs, settings
 
 
@@ -109,6 +109,7 @@ async def get_home():
     """
     return HTMLResponse(content=html_content)
 
+
 app.include_router(
     auth.router, prefix="/auth", tags=["Authentication and Registration"]
 )
@@ -121,30 +122,21 @@ app.include_router(
 )
 app.include_router(
     artists.router,
-    dependencies=[Depends(JWTBearer())],
     prefix="/artists",
     tags=["Artists"],
 )
 app.include_router(
     albums.router,
-    dependencies=[Depends(JWTBearer())],
     prefix="/albums",
     tags=["Albums"],
 )
 app.include_router(
-    songs.router, dependencies=[Depends(JWTBearer())], prefix="/songs", tags=["Songs"]
+    songs.router, prefix="/songs", tags=["Songs"]
 )
 app.include_router(
     playlists.router,
-    dependencies=[Depends(JWTBearer())],
     prefix="/playlists",
     tags=["Playlists"],
-)
-app.include_router(
-    search.router,
-    dependencies=[Depends(JWTBearer())],
-    prefix="/search",
-    tags=["Search"],
 )
 
 

@@ -38,7 +38,7 @@ def register_user(UserBody: UserCreate, db: Session = Depends(get_db), Authorize
     user_info = extract_user_info(user)
 
     access_token, refresh_token = generate_tokens(user_info, Authorize)
-    return {"accessToken": access_token, "refreshToken": refresh_token}
+    return {"access_token": access_token, "refresh_token": refresh_token}
 
 
 @router.post("/login", response_model=AuthResponse)

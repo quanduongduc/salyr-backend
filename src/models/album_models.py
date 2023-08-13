@@ -1,26 +1,36 @@
 from datetime import datetime
-from typing import List
-from pydantic import BaseModel
+from typing import Optional
+from helpers.utils import as_form
+
+from models.artist_models import ArtistResponse
+from models.models import ORJSONModel
+from models.songs_models import SongResponse
 
 
-class AlbumCreate(BaseModel):
+@as_form
+class AlbumCreate(ORJSONModel):
+    artist_id: int
     title: str
     release_date: datetime
-    cover_image_url: str
 
 
-class AlbumUpdate(BaseModel):
+class AlbumUpdate(ORJSONModel):
     title: str
     release_date: datetime
-    cover_image_url: str
+    cover_image_url: Optional[str]
 
 
-class AlbumResponse(BaseModel):
+class AlbumResponse(ORJSONModel):
     id: int
     title: str
     release_date: datetime
     cover_image_url: str
-    artist: str  # Assuming you have an ArtistResponse schema
+    artist: ArtistResponse
 
-    class Config:
-        orm_mode = True
+
+class AlbumResponseWithArtist(AlbumResponse):
+    artist: ArtistResponse
+
+
+class AlbumResponseWithArtistAndSongs(AlbumResponseWithArtist):
+    songs: list[SongResponse]

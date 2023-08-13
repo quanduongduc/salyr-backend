@@ -1,10 +1,20 @@
+from typing import Optional
+from pydantic import BaseModel
 from datetime import datetime
-from typing import List
+
 from models.models import ORJSONModel
+from models.songs_models import SongResponse
+
+
+class PlaylistRequest(ORJSONModel):
+    title: str
+
 
 class PlaylistResponse(ORJSONModel):
-    id: int
-    user_id: int
+    id: str
     title: str
     creation_date: datetime
-    songs: List[str]
+
+
+class PlayListResponseWithSongs(PlaylistResponse):
+    songs: list[SongResponse]

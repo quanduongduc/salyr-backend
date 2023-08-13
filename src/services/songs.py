@@ -1,7 +1,14 @@
-from typing import Annotated
+from typing import Annotated, List
 from sqlalchemy.orm import Session
+from db.database import paginate
 
-from db.schema import Artist, Song
+from db.schema import (
+    Artist,
+    PlaylistSongAssociation,
+    Song,
+    SongAlbumAssociation,
+    SongArtistAssociation,
+)
 from helpers.constants import S3_SONG_PATH, S3_SONG_THEME_PATH
 from helpers.http_status import StatusCode
 from helpers.s3 import generate_presigned_download_url, upload_file_to_s3
@@ -19,7 +26,8 @@ def create_song(
 
     if not db_artists:
         raise HTTPException(
-            status_code=StatusCode.HTTP_404_NOT_FOUND, detail="Artists not found"
+            status_code=StatusCode.HTTP_StatusCode.HTTP_404_NOT_FOUND_NOT_FOUND,
+            detail="Artists not found",
         )
 
     db_song.artists = db_artists
@@ -32,10 +40,16 @@ def create_song(
         audio_file=audio_file, theme_file=theme_file, song_id=db_song.id
     )
 
-    return {"message": "Create Song Successfully"}
+    return {"message": "create successfully", "id": db_song.id}
 
+def get_songs(db: Session, limit: int, page_number: int):
+    db_songs = paginate(db=db, Base=Song, page_number=page_number, page_limit=limit)
+    songs_response = [generate_song_response(song) for song in db_songs]
+    return songs_response
 
-def upload_song_asset_to_s3(audio_file: UploadFile, theme_file: UploadFile, song_id : str):
+def upload_song_asset_to_s3(
+    audio_file: UploadFile, theme_file: UploadFile, song_id: str
+):
     audio_key = f"{S3_SONG_PATH}{song_id}"
     theme_key = f"{S3_SONG_THEME_PATH}{song_id}"
 
@@ -44,15 +58,21 @@ def upload_song_asset_to_s3(audio_file: UploadFile, theme_file: UploadFile, song
 
 
 def generate_song_response(song: Song) -> SongResponse:
+    if not song:
+        return None
     theme_url, audio_url = generate_song_presigned_url(song.id)
 
-    artist_response = [ArtistResponse(
-        id=artist.id,
-        name=artist.name,
-        bio=artist.bio,
-        gender=artist.gender,
-        genre=artist.genre,
-    )for artist in song.artists]
+    artist_response = [
+        ArtistResponse(
+            id=artist.id,
+            name=artist.name,
+            bio=artist.bio,
+            gender=artist.gender,
+            genre=artist.genre,
+            avatar_url=""
+        )
+        for artist in song.artists
+    ]
 
     return SongResponse(
         id=song.id,
@@ -73,8 +93,17 @@ def read_song(db: Session, song_id: int) -> SongResponse:
 
         return song
     raise HTTPException(
-        status_code=StatusCode.HTTP_404_NOT_FOUND, detail="Song not found"
+        status_code=StatusCode.HTTP_StatusCode.HTTP_404_NOT_FOUND_NOT_FOUND,
+        detail="Song not found",
     )
+
+
+def search_song_by_title(db: Session, song_title: str) -> List[SongResponse]:
+    songs = db.query(Song).filter(Song.title.ilike(f"{song_title}%")).all()
+    if not songs:
+        return []
+    songs_response = [generate_song_response(song) for song in songs]
+    return songs_response
 
 
 def generate_song_presigned_url(song_id: int):
@@ -100,5 +129,91 @@ def update_song(db: Session, song_id: int, updated_song: SongCreate) -> SongResp
 
         return updated_song_response
     raise HTTPException(
-        status_code=StatusCode.HTTP_404_NOT_FOUND, detail="Song not found"
+        status_code=StatusCode.HTTP_StatusCode.HTTP_404_NOT_FOUND_NOT_FOUND,
+        detail="Song not found",
     )
+
+
+def associate_artist_with_song(session: Session, song_id: int, artist_id: int):
+    existing_association = (
+        session.query(SongArtistAssociation)
+        .filter_by(song_id=song_id, artist_id=artist_id)
+        .first()
+    )
+    if existing_association:
+        raise HTTPException(status_code=400, detail="Association already exists")
+    association = SongArtistAssociation(song_id=song_id, artist_id=artist_id)
+    session.add(association)
+    session.commit()
+
+
+def disassociate_artist_from_song(session: Session, song_id: int, artist_id: int):
+    association = (
+        session.query(SongArtistAssociation)
+        .filter_by(song_id=song_id, artist_id=artist_id)
+        .first()
+    )
+    if association:
+        session.delete(association)
+        session.commit()
+    else:
+        raise HTTPException(
+            status_code=StatusCode.HTTP_404_NOT_FOUND, detail="Association not found"
+        )
+
+
+def associate_album_with_song(session: Session, song_id: int, album_id: int):
+    existing_association = (
+        session.query(SongAlbumAssociation)
+        .filter_by(song_id=song_id, album_id=album_id)
+        .first()
+    )
+    if existing_association:
+        raise HTTPException(status_code=400, detail="Association already exists")
+    association = SongAlbumAssociation(song_id=song_id, album_id=album_id)
+    session.add(association)
+    session.commit()
+
+
+def disassociate_album_from_song(session: Session, song_id: int, album_id: int):
+    association = (
+        session.query(SongAlbumAssociation)
+        .filter_by(song_id=song_id, album_id=album_id)
+        .first()
+    )
+    if association:
+        session.delete(association)
+        session.commit()
+    else:
+        raise HTTPException(
+            status_code=StatusCode.HTTP_404_NOT_FOUND, detail="Association not found"
+        )
+
+
+def associate_song_with_playlist(session: Session, song_id: int, playlist_id: int):
+    existing_association = (
+        session.query(PlaylistSongAssociation)
+        .filter_by(song_id=song_id, playlist_id=playlist_id)
+        .first()
+    )
+    if existing_association:
+        raise HTTPException(status_code=400, detail="Association already exists")
+
+    association = PlaylistSongAssociation(song_id=song_id, playlist_id=playlist_id)
+    session.add(association)
+    session.commit()
+
+
+def disassociate_song_from_playlist(session: Session, song_id: int, playlist_id: int):
+    association = (
+        session.query(PlaylistSongAssociation)
+        .filter_by(song_id=song_id, playlist_id=playlist_id)
+        .first()
+    )
+    if association:
+        session.delete(association)
+        session.commit()
+    else:
+        raise HTTPException(
+            status_code=StatusCode.HTTP_404_NOT_FOUND, detail="Association not found"
+        )

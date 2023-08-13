@@ -1,10 +1,8 @@
 from datetime import datetime
 from typing import List, Optional
 
-from fastapi import Form
 from helpers.utils import as_form
 
-from models.artist_models import ArtistResponse
 from models.models import ORJSONModel
 
 
@@ -23,4 +21,7 @@ class SongResponse(ORJSONModel):
     genre: str
     url: str
     theme_url: str
-    artists: Optional[List[ArtistResponse]]
+    artists: "Optional[List[ArtistResponse]]"
+
+from models.artist_models import ArtistResponse
+SongResponse.update_forward_refs()

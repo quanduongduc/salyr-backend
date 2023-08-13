@@ -1,3 +1,4 @@
+from typing import List
 from fastapi import HTTPException, Header, UploadFile
 from sqlalchemy.orm import Session
 from db.schema import User, UserFavorite
@@ -8,6 +9,9 @@ from models.songs_models import SongResponse
 from models.user_models import UserCreate, UserResponse, UserUpdate
 
 from services.auth import get_password_hash
+from services.playlists import generate_playlist_response
+from services.songs import generate_song_response
+
 
 def get_current_user(token: str = Header(None)) -> str:
     if token is None:
@@ -34,29 +38,41 @@ def generate_user_response(user):
     avatar_url = generate_presigned_download_url(
         key=f'{S3_AVATAR_FOLDER_PATH}{user.id}')
 
+    last_play_response = generate_song_response(user.last_play)
+
+    db_playlists = user.playlists
+    if db_playlists:
+        playlists_response = [generate_playlist_response(
+            playlist) for playlist in user.playlists]
+    else :
+        playlists_response = []
+
     return UserResponse(
         id=user.id,
         username=user.username,
         alias=user.alias,
         email=user.email,
         created_at=user.created_at,
-        last_play=user.last_play,
-        playlists=user.playlists,
+        last_play=last_play_response,
+        playlists=playlists_response,
         avatar_url=avatar_url
     )
 
 
-def get_favorites(db, id: str) -> SongResponse:
-    favorite = db.query(User.favorites).filter(
-        User.id == id).first()
-
-    return favorite
+def get_favorites(db, id: str) -> List[SongResponse]:
+    favorites = db.query(User).filter(
+        User.id == id).first().favorites
+    if favorites :
+        return [generate_song_response(song) for song in favorites]
+    else :
+        return []
 
 
 def create_user(user_data: UserCreate, db: Session) -> User:
     new_user = User(
         username=user_data.username,
         email=user_data.email,
+        alias=user_data.alias,
     )
 
     hashed_password = get_password_hash(user_data.password)
@@ -98,13 +114,16 @@ def update_user(db: Session, user_info: UserUpdate, id : id, avatar_file: Upload
 def add_to_favorites(db: Session, user_id: int, song_id: int):
     user = db.query(User.id).filter(User.id == user_id).first()
     if user:
-        new_favorite = UserFavorite(user_id=user_id, song_id=song_id)
-        db.add(new_favorite)
-        db.commit()
-        db.refresh(new_favorite)
-        return new_favorite
+        try :
+            new_favorite = UserFavorite(user_id=user_id, song_id=song_id)
+            db.add(new_favorite)
+            db.commit()
+            db.refresh(new_favorite)
+            return {"message" : "add favorite successfully"}
+        except:
+            return {"message" : "add favorite failed"}
     else:
-        return None
+        return {"message" : "user not found"}
 
 
 def remove_from_favorites(db: Session, user_id: int, song_id: int) -> bool:

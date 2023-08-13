@@ -1,8 +1,7 @@
+from helpers.utils import as_form
 from typing import List, Optional
 
-from pydantic import BaseModel
 from helpers.constants import Gender
-from models.album_models import AlbumResponse
 from models.models import ORJSONModel
 
 
@@ -11,18 +10,25 @@ class ArtistResponse(ORJSONModel):
     name: str
     bio: str
     genre: str
-    gender: Gender
-    albums: Optional[List[AlbumResponse]]
+    avatar_url: str
 
 
-class ArtistCreate(BaseModel):
+@as_form
+class ArtistCreate(ORJSONModel):
     name: str
     bio: str
     genre: str
-    gender: Gender
 
 
-class ArtistUpdate(BaseModel):
+class ArtistUpdate(ORJSONModel):
     name: str
     bio: str
     genre: str
+
+
+class ArtistResponseWithSongs(ArtistResponse):
+    songs: "List[SongResponse]"
+
+
+from models.songs_models import SongResponse
+ArtistResponseWithSongs.update_forward_refs()

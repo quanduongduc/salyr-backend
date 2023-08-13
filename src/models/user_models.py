@@ -16,7 +16,7 @@ class UserResponse(ORJSONModel):
     email: EmailStr
     avatar_url: str
     created_at: datetime
-    playlists: List['PlaylistResponse']
+    playlists: Optional[List['PlaylistResponse']]
     last_play: Optional[SongResponse]
 
 
