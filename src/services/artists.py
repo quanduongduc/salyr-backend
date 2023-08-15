@@ -45,9 +45,15 @@ def read_artist(db: Session, artist_id: int) -> ArtistResponseWithSongs:
 
     songs_response = [generate_song_response(song) for song in artist.songs]
 
-    artist_response = ArtistResponseWithSongs(
-        **generate_artist_response(artist),
-        songs=songs_response,
+    key = f"{S3_Artist_AVATAR_PATH}{artist.id}"
+    avatar_url = generate_presigned_download_url(key)
+    return ArtistResponseWithSongs(
+        id=artist.id,
+        name=artist.name,
+        genre=artist.genre,
+        bio=artist.bio,
+        avatar_url=avatar_url,
+        songs=songs_response
     )
 
     return artist_response
@@ -75,7 +81,8 @@ def delete_artist(db: Session, artist_id: int):
 
 
 def get_artists(db: Session, limit: int, page_number: int):
-    db_artists = paginate(db=db, Base=Artist, page_number=page_number, page_limit=limit).all()
+    artists_query = db.query(Artist)
+    db_artists = paginate(db=db, query=artists_query, page_number=page_number, page_limit=limit).all()
     artists_response = [generate_artist_response(artist) for artist in db_artists]
     return artists_response
     

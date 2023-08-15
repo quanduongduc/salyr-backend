@@ -83,7 +83,8 @@ def delete_album(db: Session, album_id: int) -> bool:
     return False
 
 def get_albums(db: Session, limit: int, page_number: int):
-    db_albums = paginate(db=db, Base=Album, page_number=page_number, page_limit=limit).all()
+    albums_query = db.query(Album)
+    db_albums = paginate(db=db, query=albums_query, page_number=page_number, page_limit=limit).all()
     albums_response = [generate_album_response(album) for album in db_albums]
     return albums_response
 

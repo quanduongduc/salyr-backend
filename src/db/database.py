@@ -2,8 +2,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from config.config import settings
-from db.schema import BaseModel
 from sqlalchemy.orm import Session
+from sqlalchemy.orm import Query
 
 DATABASE_URL = settings.mysql_dsn
 
@@ -25,6 +25,6 @@ def get_db():
         db.close()
 
 
-def paginate(db: Session, Base : BaseModel, page_number: int, page_limit: int):
+def paginate(db: Session, query : Query, page_number: int, page_limit: int) -> Query:
     offset = (page_number - 1) * page_limit
-    return db.query(Base).offset(offset).limit(page_limit)
+    return query.offset(offset).limit(page_limit)

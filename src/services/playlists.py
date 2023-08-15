@@ -13,7 +13,10 @@ def get_playlists_by_user(db: Session, user_id: int) -> PlaylistResponse:
     return db.query(Playlist).filter_by(user_id=user_id).all()
 
 def get_playlists(db: Session, limit: int, page_number: int, user_id):
-    db_playlists = paginate(db=db, Base=Playlist, page_number=page_number, page_limit=limit).filter(Playlist.user_id == user_id).all()
+    playlists_query = db.query(Playlist).filter(Playlist.user_id == user_id)
+    db_playlists = paginate(db=db, query=playlists_query, page_number=page_number, page_limit=limit).all()
+    if not db_playlists :
+        return []
     playlists_response = [generate_playlist_response(playlist) for playlist in db_playlists]
     return playlists_response
 

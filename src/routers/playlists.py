@@ -47,7 +47,7 @@ def get_playlists_endpoint(
 #     return playlist
 
 
-@router.get("/query", response_model=PlayListResponseWithSongs)
+@router.get("/query", response_model=List[PlaylistResponse])
 def get_playlist_endpoint(
     limit: int = 10,
     page_number: int = 1,

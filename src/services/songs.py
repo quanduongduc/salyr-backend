@@ -43,7 +43,8 @@ def create_song(
     return {"message": "create successfully", "id": db_song.id}
 
 def get_songs(db: Session, limit: int, page_number: int):
-    db_songs = paginate(db=db, Base=Song, page_number=page_number, page_limit=limit).all()
+    songs_query = db.query(Song)
+    db_songs = paginate(db=db, query=songs_query, page_number=page_number, page_limit=limit).all()
     songs_response = [generate_song_response(song) for song in db_songs]
     return songs_response
 
