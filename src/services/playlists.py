@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from db.database import paginate
 
 from db.schema import Playlist
 from helpers.http_status import StatusCode
@@ -11,6 +12,10 @@ from services.songs import generate_song_response
 def get_playlists_by_user(db: Session, user_id: int) -> PlaylistResponse:
     return db.query(Playlist).filter_by(user_id=user_id).all()
 
+def get_playlists(db: Session, limit: int, page_number: int, user_id):
+    db_playlists = paginate(db=db, Base=Playlist, page_number=page_number, page_limit=limit).filter(Playlist.user_id == user_id).all()
+    playlists_response = [generate_playlist_response(playlist) for playlist in db_playlists]
+    return playlists_response
 
 def get_playlist(db: Session, playlist_id: int) -> PlayListResponseWithSongs:
     db_playlist = db.query(Playlist).filter_by(id=playlist_id).first()

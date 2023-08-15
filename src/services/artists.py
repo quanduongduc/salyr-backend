@@ -46,12 +46,8 @@ def read_artist(db: Session, artist_id: int) -> ArtistResponseWithSongs:
     songs_response = [generate_song_response(song) for song in artist.songs]
 
     artist_response = ArtistResponseWithSongs(
-        id=artist.id,
-        name=artist.name,
-        gender=artist.gender,
-        genre=artist.genre,
-        bio=artist.bio,
-        songs=songs_response
+        **generate_artist_response(artist),
+        songs=songs_response,
     )
 
     return artist_response
@@ -79,7 +75,7 @@ def delete_artist(db: Session, artist_id: int):
 
 
 def get_artists(db: Session, limit: int, page_number: int):
-    db_artists = paginate(db=db, Base=Artist, page_number=page_number, page_limit=limit)
+    db_artists = paginate(db=db, Base=Artist, page_number=page_number, page_limit=limit).all()
     artists_response = [generate_artist_response(artist) for artist in db_artists]
     return artists_response
     

@@ -27,4 +27,4 @@ def get_db():
 
 def paginate(db: Session, Base : BaseModel, page_number: int, page_limit: int):
     offset = (page_number - 1) * page_limit
-    return db.query(Base).offset(offset).limit(page_limit).all()
+    return db.query(Base).offset(offset).limit(page_limit)

@@ -36,9 +36,6 @@ def upload_file_to_s3(key: str, file: UploadFile) -> str:
 
 def generate_presigned_download_url(key: str, expiration: int = 3600) -> str:
     try:
-        object_metadata = s3_client.get_object_attributes(Bucket=settings.S3_BUCKET,
-                                                          Key=key,
-                                                          ObjectAttributes=["ETag"])
         presigned_url = s3_client.generate_presigned_url(
             'get_object',
             Params={

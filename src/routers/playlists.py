@@ -4,11 +4,17 @@ from sqlalchemy.orm import Session
 from db.database import get_db
 from dependencies import get_current_user
 from helpers.http_status import StatusCode
-from models.playlist_models import PlayListResponseWithSongs, PlaylistResponse, PlaylistRequest
+from models.playlist_models import (
+    PlayListResponseWithSongs,
+    PlaylistResponse,
+    PlaylistRequest,
+)
+from models.user_models import CurrentUser
 from services.playlists import (
     create_playlist,
     delete_playlist,
     get_playlist,
+    get_playlists,
     get_playlists_by_user,
     update_playlist,
 )
@@ -40,13 +46,28 @@ def get_playlists_endpoint(
 
 #     return playlist
 
+
+@router.get("/query", response_model=PlayListResponseWithSongs)
+def get_playlist_endpoint(
+    limit: int = 10,
+    page_number: int = 1,
+    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
+):
+    playlist = get_playlists(
+        limit=limit, page_number=page_number, db=db, user_id=current_user.user_id
+    )
+    return playlist
+
+
 @router.get("/{playlist_id}", response_model=PlayListResponseWithSongs)
 def get_playlist_endpoint(
     playlist_id: int,
     db: Session = Depends(get_db),
 ):
     playlist = get_playlist(
-        db=db, playlist_id=playlist_id,
+        db=db,
+        playlist_id=playlist_id,
     )
     if playlist is None:
         raise HTTPException(
@@ -75,7 +96,6 @@ def update_playlist_endpoint(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    
     playlist = update_playlist(
         db=db,
         playlist_id=playlist_id,
