@@ -9,13 +9,21 @@ from models.songs_models import SongResponse
 
 
 from models.user_models import CurrentUser, UserResponse, UserUpdate
-from services.users import add_to_favorites, get_favorites, get_user_by_id, remove_from_favorites, update_user
+from services.users import add_to_favorites, get_favorites, get_user_by_id, remove_from_favorites, update_user, update_user_lastplay
 router = APIRouter()
 
 
 @router.get("/me", response_model=UserResponse)
 def get_user_endpoint(db : Session = Depends(get_db) , current_user: CurrentUser = Depends(get_current_user)) -> UserResponse:
     response = get_user_by_id(db, current_user.user_id)
+
+    return response
+
+
+@router.put("/lastplay/{song_id}", response_model=Dict)
+def update_lastplay_endpoint(song_id: str, db : Session = Depends(get_db) , current_user: CurrentUser = Depends(get_current_user)) -> UserResponse:
+    response = update_user_lastplay(
+        db=db, user_id=current_user.user_id, song_id=song_id)
 
     return response
 

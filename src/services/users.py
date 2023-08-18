@@ -25,13 +25,24 @@ def get_current_user(token: str = Header(None)) -> str:
     return user
 
 
-def get_user_by_id(db, id: str):
+def get_user_by_id(db: Session, id: str):
     user = db.query(User).filter(
         User.id == id).first()
 
     user_reponse = generate_user_response(user)
 
     return user_reponse
+
+
+def update_user_lastplay(db: Session, user_id: str, song_id: str):
+    user_to_update = db.query(User).filter(
+        User.id == user_id).first()
+    user_to_update.last_play_id = song_id
+    db.commit()
+
+    return {
+        "message" : "update lastplay successfully"
+    }
 
 
 def generate_user_response(user):
