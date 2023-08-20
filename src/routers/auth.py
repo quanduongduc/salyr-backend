@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from fastapi import Depends, HTTPException
 from db.database import get_db
 from db.schema import User
-from helpers.http_status import StatusCode
+from fastapi import status
 from helpers.jwt import generate_tokens
 from helpers.utils import JWTBearer
 from models.auth_models import AuthResponse, UserLogin
@@ -22,14 +22,14 @@ def register_user(UserBody: UserCreate, db: Session = Depends(get_db), Authorize
     existing_user = db.query(User.id).filter(User.username == UserBody.username).first()
     if existing_user:
         raise HTTPException(
-            status_code=StatusCode.HTTP_404_NOT_FOUND,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="Username already taken",
         )
 
     existing_email = db.query(User.email).filter(User.email == UserBody.email).first()
     if existing_email:
         raise HTTPException(
-            status_code=StatusCode.HTTP_404_NOT_FOUND,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="Email already registered",
         )
 
@@ -48,7 +48,7 @@ def login_user(
     user = authenticate_user(form_data.username, form_data.password, db)
     if not user:
         raise HTTPException(
-            status_code=StatusCode.HTTP_401_UNAUTHORIZED,
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
         )
 

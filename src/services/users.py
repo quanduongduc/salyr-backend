@@ -1,9 +1,8 @@
 from typing import List
-from fastapi import HTTPException, Header, UploadFile
+from fastapi import HTTPException, Header, UploadFile, status
 from sqlalchemy.orm import Session
 from db.schema import User, UserFavorite
 from helpers.constants import S3_AVATAR_FOLDER_PATH
-from helpers.http_status import StatusCode
 from helpers.s3 import generate_presigned_download_url, upload_file_to_s3
 from models.songs_models import SongResponse
 from models.user_models import UserCreate, UserResponse, UserUpdate
@@ -110,7 +109,7 @@ def update_user(db: Session, user_info: UserUpdate, id : id, avatar_file: Upload
 
             if uploade_response['ResponseMetadata']['HTTPStatusCode'] != 200:
                 raise HTTPException(
-                    status_code=StatusCode.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error uploading avatar")
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error uploading avatar")
 
         db.commit()
         db.refresh(db_user)

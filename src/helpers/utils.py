@@ -6,7 +6,7 @@ from typing import Type
 from fastapi import Form, HTTPException, Request
 
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from helpers.http_status import StatusCode
+from fastapi import status
 
 from helpers.jwt import decode_jwt
 from models.models import ORJSONModel
@@ -24,13 +24,13 @@ class JWTBearer(HTTPBearer):
         if credentials:
             if not credentials.scheme == "Bearer":
                 raise HTTPException(
-                    status_code=StatusCode.HTTP_403_FORBIDDEN, detail="Invalid authentication scheme.")
+                    status_code=status.HTTP_403_FORBIDDEN, detail="Invalid authentication scheme.")
             if not self.verify_jwt(credentials.credentials):
                 raise HTTPException(
-                    status_code=StatusCode.HTTP_403_FORBIDDEN, detail="Invalid token or expired token.")
+                    status_code=status.HTTP_403_FORBIDDEN, detail="Invalid token or expired token.")
             return credentials.credentials
         else:
-            raise HTTPException(status_code=StatusCode.HTTP_403_FORBIDDEN,
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                                 detail="Invalid authorization code.")
 
     def verify_jwt(self, jwtoken: str) -> bool:

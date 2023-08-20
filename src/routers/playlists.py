@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from db.database import get_db
 from dependencies import get_current_user
-from helpers.http_status import StatusCode
+from fastapi import status
 from models.playlist_models import (
     PlayListResponseWithSongs,
     PlaylistResponse,
@@ -41,7 +41,7 @@ def get_playlists_endpoint(
 #     )
 #     if playlist is None:
 #         raise HTTPException(
-#             status_code=StatusCode.HTTP_404_NOT_FOUND, detail="Playlist not found"
+#             status_code=status.HTTP_404_NOT_FOUND, detail="Playlist not found"
 #         )
 
 #     return playlist
@@ -71,7 +71,7 @@ def get_playlist_endpoint(
     )
     if playlist is None:
         raise HTTPException(
-            status_code=StatusCode.HTTP_404_NOT_FOUND, detail="Playlist not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Playlist not found"
         )
 
     return playlist
@@ -104,7 +104,7 @@ def update_playlist_endpoint(
     )
     if playlist is None:
         raise HTTPException(
-            status_code=StatusCode.HTTP_404_NOT_FOUND, detail="Playlist not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Playlist not found"
         )
     return playlist
 
@@ -120,6 +120,6 @@ def delete_playlist_endpoint(
     )
     if not deleted:
         raise HTTPException(
-            status_code=StatusCode.HTTP_404_NOT_FOUND, detail="Playlist not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Playlist not found"
         )
     return {"message": "Playlist deleted"}

@@ -7,13 +7,12 @@ from pydantic import ValidationError
 
 from pymysql import OperationalError
 import sentry_sdk
-from fastapi import Depends, FastAPI, Request
+from fastapi import Depends, FastAPI, Request, status
 from redis import asyncio as aioredis
 from fastapi_jwt_auth.exceptions import AuthJWTException
 from starlette.middleware.cors import CORSMiddleware
 
 from db import redis
-from helpers.http_status import StatusCode
 from helpers.utils import JWTBearer
 from routers import auth, users, artists, albums, songs, playlists
 from config.config import app_configs, settings
@@ -146,7 +145,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     for error in exc.errors():
         if len(error["loc"]) != 4:
             return JSONResponse(
-                status_code=StatusCode.HTTP_422_UNPROCESSABLE_ENTITY,
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 content={"detail": str(exc)},
             )
         field = error["loc"][3]
@@ -157,19 +156,19 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     error_detail = ". ".join(error_dict.values())
     content = {"detail": error_detail, "message": "Invalid output type."}
     return JSONResponse(
-        status_code=StatusCode.HTTP_422_UNPROCESSABLE_ENTITY, content=content
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, content=content
     )
 
 
 @app.exception_handler(OperationalError)
 async def handle_database_exception(request: Request, exc: OperationalError):
     return JSONResponse(
-        status_code=StatusCode.HTTP_500_INTERNAL_SERVER_ERROR, content=str(exc)
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content=str(exc)
     )
 
 
 @app.exception_handler(AuthJWTException)
 def authjwt_exception_handler(request: Request, exc: AuthJWTException):
     return JSONResponse(
-        status_code=StatusCode.HTTP_401_UNAUTHORIZED, content={"detail": exc.message}
+        status_code=status.HTTP_401_UNAUTHORIZED, content={"detail": exc.message}
     )

@@ -1,11 +1,10 @@
 import io
 from botocore.exceptions import NoCredentialsError, ClientError
 import boto3
-from fastapi import HTTPException, UploadFile
+from fastapi import HTTPException, UploadFile, status
 
 from helpers.constants import S3_DEFAULT_AVATAR
 from config.config import settings
-from helpers.http_status import StatusCode
 
 s3_client = boto3.client(
     's3',
@@ -58,7 +57,7 @@ def generate_presigned_download_url(key: str, expiration: int = 3600) -> str:
                 ExpiresIn=expiration
             )
         else:
-            raise HTTPException(status_code=StatusCode.HTTP_404_NOT_FOUND,
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                                 detail="Error while finding file")
     return presigned_url
 

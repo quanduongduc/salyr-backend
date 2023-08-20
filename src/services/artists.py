@@ -2,7 +2,7 @@ from typing import List
 from db.database import paginate
 from db.schema import Artist
 from helpers.constants import S3_Artist_AVATAR_PATH
-from helpers.http_status import StatusCode
+from fastapi import status
 from helpers.s3 import generate_presigned_download_url, upload_file_to_s3
 from models.artist_models import ArtistCreate, ArtistResponse, ArtistResponseWithSongs, ArtistUpdate
 from sqlalchemy.orm import Session
@@ -40,7 +40,7 @@ def read_artist(db: Session, artist_id: int) -> ArtistResponseWithSongs:
     artist = db.query(Artist).filter(Artist.id == artist_id).first()
     if not artist:
         raise HTTPException(
-            status_code=StatusCode.HTTP_404_NOT_FOUND, detail="Artist not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Artist not found"
         )
 
     songs_response = [generate_song_response(song) for song in artist.songs]
@@ -68,7 +68,7 @@ def update_artist(db: Session, artist_id: int, artist: ArtistUpdate) -> ArtistRe
         db.refresh(db_artist)
         return generate_artist_response(db_artist)
     raise HTTPException(
-        status_code=StatusCode.HTTP_404_NOT_FOUND, detail="Artist not found"
+        status_code=status.HTTP_404_NOT_FOUND, detail="Artist not found"
     )
 
 
@@ -82,10 +82,11 @@ def delete_artist(db: Session, artist_id: int):
 
 def get_artists(db: Session, limit: int, page_number: int):
     artists_query = db.query(Artist)
-    db_artists = paginate(db=db, query=artists_query, page_number=page_number, page_limit=limit).all()
+    db_artists = paginate(db=db, query=artists_query,
+                          page_number=page_number, page_limit=limit).all()
     artists_response = [generate_artist_response(artist) for artist in db_artists]
     return artists_response
-    
+
 
 def search_artist_by_name(db: Session, artist_name : str) -> List[ArtistResponse]:
     artists = db.query(Artist).filter(Artist.name.ilike(f'{artist_name}%')).all()

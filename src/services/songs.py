@@ -10,12 +10,11 @@ from db.schema import (
     SongArtistAssociation,
 )
 from helpers.constants import S3_SONG_PATH, S3_SONG_THEME_PATH
-from helpers.http_status import StatusCode
 from helpers.s3 import generate_presigned_download_url, upload_file_to_s3
 from models.artist_models import ArtistResponse
 from models.songs_models import SongCreate, SongResponse
 from fastapi import File, UploadFile
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 
 
 def create_song(
@@ -26,7 +25,7 @@ def create_song(
 
     if not db_artists:
         raise HTTPException(
-            status_code=StatusCode.HTTP_StatusCode.HTTP_404_NOT_FOUND_NOT_FOUND,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="Artists not found",
         )
 
@@ -42,11 +41,14 @@ def create_song(
 
     return {"message": "create successfully", "id": db_song.id}
 
+
 def get_songs(db: Session, limit: int, page_number: int):
     songs_query = db.query(Song)
-    db_songs = paginate(db=db, query=songs_query, page_number=page_number, page_limit=limit).all()
+    db_songs = paginate(db=db, query=songs_query,
+                        page_number=page_number, page_limit=limit).all()
     songs_response = [generate_song_response(song) for song in db_songs]
     return songs_response
+
 
 def upload_song_asset_to_s3(
     audio_file: UploadFile, theme_file: UploadFile, song_id: str
@@ -94,7 +96,7 @@ def read_song(db: Session, song_id: int) -> SongResponse:
 
         return song
     raise HTTPException(
-        status_code=StatusCode.HTTP_StatusCode.HTTP_404_NOT_FOUND_NOT_FOUND,
+        status_code=status.HTTP_404_NOT_FOUND,
         detail="Song not found",
     )
 
@@ -130,7 +132,7 @@ def update_song(db: Session, song_id: int, updated_song: SongCreate) -> SongResp
 
         return updated_song_response
     raise HTTPException(
-        status_code=StatusCode.HTTP_StatusCode.HTTP_404_NOT_FOUND_NOT_FOUND,
+        status_code=status.HTTP_404_NOT_FOUND,
         detail="Song not found",
     )
 
@@ -159,7 +161,7 @@ def disassociate_artist_from_song(session: Session, song_id: int, artist_id: int
         session.commit()
     else:
         raise HTTPException(
-            status_code=StatusCode.HTTP_404_NOT_FOUND, detail="Association not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Association not found"
         )
 
 
@@ -187,7 +189,7 @@ def disassociate_album_from_song(session: Session, song_id: int, album_id: int):
         session.commit()
     else:
         raise HTTPException(
-            status_code=StatusCode.HTTP_404_NOT_FOUND, detail="Association not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Association not found"
         )
 
 
@@ -216,5 +218,5 @@ def disassociate_song_from_playlist(session: Session, song_id: int, playlist_id:
         session.commit()
     else:
         raise HTTPException(
-            status_code=StatusCode.HTTP_404_NOT_FOUND, detail="Association not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Association not found"
         )
