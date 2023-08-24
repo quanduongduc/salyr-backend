@@ -2,7 +2,7 @@
 
 set -e
 
-DEFAULT_MODULE_NAME=src.main
+DEFAULT_MODULE_NAME=main
 
 MODULE_NAME=${MODULE_NAME:-$DEFAULT_MODULE_NAME}
 VARIABLE_NAME=${VARIABLE_NAME:-app}
@@ -13,4 +13,4 @@ export GUNICORN_CONF=${GUNICORN_CONF:-$DEFAULT_GUNICORN_CONF}
 export WORKER_CLASS=${WORKER_CLASS:-"uvicorn.workers.UvicornWorker"}
 
 # Start Gunicorn
-gunicorn --forwarded-allow-ips "*" -k "$WORKER_CLASS" -c "$GUNICORN_CONF" "$APP_MODULE"
+gunicorn --pythonpath "./src" --forwarded-allow-ips "*" -k "$WORKER_CLASS" -c "$GUNICORN_CONF" "$APP_MODULE"
