@@ -1,8 +1,9 @@
 from typing import List
 from fastapi import HTTPException, Header, UploadFile, status
+import requests
 from sqlalchemy.orm import Session
 from db.schema import User, UserFavorite
-from helpers.constants import S3_AVATAR_FOLDER_PATH
+from helpers.constants import S3_AVATAR_FOLDER_PATH, S3_DEFAULT_AVATAR
 from helpers.s3 import generate_presigned_download_url, upload_file_to_s3
 from models.songs_models import SongResponse
 from models.user_models import UserCreate, UserResponse, UserUpdate
@@ -47,7 +48,9 @@ def update_user_lastplay(db: Session, user_id: str, song_id: str):
 def generate_user_response(user):
     avatar_url = generate_presigned_download_url(
         key=f'{S3_AVATAR_FOLDER_PATH}{user.id}')
-
+    response = requests.get(avatar_url)
+    if response.status_code != 200:
+        avatar_url = generate_presigned_download_url(key=S3_DEFAULT_AVATAR)
     last_play_response = generate_song_response(user.last_play)
 
     db_playlists = user.playlists

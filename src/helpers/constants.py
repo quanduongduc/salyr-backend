@@ -31,7 +31,7 @@ class Environment(str, Enum):
 S3_SONG_PATH = "songs/audios/"
 S3_SONG_THEME_PATH = "songs/themes/"
 S3_AVATAR_FOLDER_PATH = "users/avatar/"
-S3_DEFAULT_AVATAR = "users/avatar/DEFAULT_FEMALE.svg"
+S3_DEFAULT_AVATAR = "users/avatar/DEFAULT_FEMALE.jpg"
 S3_ALBUM_COVER_IMAGE_PATH = "albums/cover/"
 S3_Artist_AVATAR_PATH = "artists/avatar/"
 
